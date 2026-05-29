@@ -795,8 +795,8 @@ function movableRange(vehicle) {
 
 function renderHighlights(vehicle, moves) {
   highlightGroup.clear();
-  const selectedMaterial = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.28 });
-  const moveMaterial = new THREE.MeshStandardMaterial({ color: "#f4d35e", transparent: true, opacity: 0.42 });
+  const selectedMaterial = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.24 });
+  const moveMaterial = new THREE.MeshStandardMaterial({ color: "#f4d35e", transparent: true, opacity: 0.34 });
 
   vehicleCells(vehicle).forEach(([row, col]) => {
     const marker = new THREE.Mesh(new THREE.BoxGeometry(CELL * 0.95, 0.08, CELL * 0.95), selectedMaterial);
@@ -806,19 +806,20 @@ function renderHighlights(vehicle, moves) {
 
   for (let offset = moves.min; offset <= moves.max; offset += 1) {
     if (offset === 0) continue;
-    const row = vehicle.orientation === "h"
-      ? vehicle.row
-      : offset > 0
-        ? vehicle.row + vehicle.length + offset - 1
-        : vehicle.row + offset;
-    const col = vehicle.orientation === "h"
-      ? offset > 0
-        ? vehicle.col + vehicle.length + offset - 1
-        : vehicle.col + offset
-      : vehicle.col;
-    const marker = new THREE.Mesh(new THREE.BoxGeometry(CELL * 0.9, 0.07, CELL * 0.9), moveMaterial);
-    marker.position.set(toX(col), 0.08, toZ(row));
-    highlightGroup.add(marker);
+    const row = vehicle.orientation === "h" ? vehicle.row : vehicle.row + offset;
+    const col = vehicle.orientation === "h" ? vehicle.col + offset : vehicle.col;
+    const ghost = new THREE.Mesh(
+      vehicle.orientation === "h"
+        ? new THREE.BoxGeometry(vehicle.length * CELL - 0.12, 0.09, CELL * 0.86)
+        : new THREE.BoxGeometry(CELL * 0.86, 0.09, vehicle.length * CELL - 0.12),
+      moveMaterial
+    );
+    ghost.position.set(
+      toX(col) + (vehicle.orientation === "h" ? ((vehicle.length - 1) * CELL) / 2 : 0),
+      0.1,
+      toZ(row) + (vehicle.orientation === "v" ? ((vehicle.length - 1) * CELL) / 2 : 0)
+    );
+    highlightGroup.add(ghost);
   }
 }
 
