@@ -151,10 +151,10 @@ h2 {
 }
 
 .stage-grid button {
-  aspect-ratio: 1;
-  min-height: 0;
+  min-height: 34px;
   padding: 0;
   font-size: 0.86rem;
+  line-height: 1;
 }
 
 .stage-grid button.active {

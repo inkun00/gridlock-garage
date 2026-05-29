@@ -3,36 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gridlock Garage</title>
+    <title>그리드락 개러지</title>
     <link rel="stylesheet" href="./styles.css" />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://esm.sh/three@0.164.1",
-          "three/addons/": "https://esm.sh/three@0.164.1/examples/jsm/"
-        }
-      }
-    </script>
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">3D sliding puzzle</p>
-          <h1>Gridlock Garage</h1>
+          <p class="eyebrow">3D 차량 퍼즐</p>
+          <h1>그리드락 개러지</h1>
         </div>
         <div class="stats" aria-label="현재 플레이 정보">
-          <span><strong id="stageLabel">1</strong> Stage</span>
-          <span><strong id="timerLabel">00:00</strong> Time</span>
-          <span><strong id="moveLabel">0</strong> Moves</span>
+          <span><strong id="stageLabel">1</strong> 스테이지</span>
+          <span><strong id="timerLabel">00:00</strong> 시간</span>
+          <span><strong id="moveLabel">0</strong> 이동</span>
         </div>
       </header>
 
       <section class="game-layout">
         <aside class="panel stage-panel">
           <div class="panel-header">
-            <h2>Stages</h2>
-            <span id="difficultyLabel">Beginner</span>
+            <h2>스테이지</h2>
+            <span id="difficultyLabel">입문</span>
           </div>
           <div id="stageGrid" class="stage-grid" aria-label="스테이지 선택"></div>
         </aside>
@@ -40,16 +32,16 @@
         <section class="board-section" aria-label="3D 게임 보드">
           <div id="sceneHost" class="scene-host"></div>
           <div class="action-bar">
-            <button id="undoButton" type="button" title="Undo">Undo</button>
-            <button id="resetButton" type="button" title="Reset">Reset</button>
-            <button id="nextButton" type="button" title="Next stage">Next</button>
+            <button id="undoButton" type="button" title="되돌리기">되돌리기</button>
+            <button id="resetButton" type="button" title="다시 시작">다시 시작</button>
+            <button id="nextButton" type="button" title="다음 스테이지">다음</button>
           </div>
         </section>
 
         <aside class="panel leaderboard-panel">
           <div class="panel-header">
-            <h2>Leaderboard</h2>
-            <span>Top 50</span>
+            <h2>리더보드</h2>
+            <span>상위 50위</span>
           </div>
           <ol id="leaderboardList" class="leaderboard"></ol>
         </aside>
@@ -58,12 +50,12 @@
 
     <dialog id="clearDialog" class="clear-dialog">
       <form method="dialog">
-        <p class="eyebrow">Stage clear</p>
-        <h2 id="clearTitle">Nice drive</h2>
+        <p class="eyebrow">스테이지 클리어</p>
+        <h2 id="clearTitle">멋진 탈출</h2>
         <p id="clearSummary"></p>
         <div class="dialog-actions">
-          <button id="clearReplayButton" value="replay" type="submit">Replay</button>
-          <button id="clearNextButton" value="next" type="submit">Next</button>
+          <button id="clearReplayButton" value="replay" type="submit">다시 하기</button>
+          <button id="clearNextButton" value="next" type="submit">다음</button>
         </div>
       </form>
     </dialog>
