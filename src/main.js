@@ -1,5 +1,5 @@
-﻿import * as THREE from "https://esm.sh/three@0.164.1";
-import { OrbitControls } from "https://esm.sh/three@0.164.1/examples/jsm/controls/OrbitControls.js";
+﻿import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 const PUZZLES = [
   { moves: 60, board: "IBBxooIooLDDJAALooJoKEEMFFKooMGGHHHM" },
   { moves: 58, board: "BBoKMxDDDKMoIAALooIoJLEEooJFFNoGGoxN" },

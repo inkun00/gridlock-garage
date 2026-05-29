@@ -1,0 +1,16 @@
+{
+  "name": "gridlock-garage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "vite --host 127.0.0.1"
+  },
+  "dependencies": {
+    "esbuild": "^0.21.5",
+    "three": "^0.164.1",
+    "vite": "^5.4.21"
+  },
+  "devDependencies": {}
+}
