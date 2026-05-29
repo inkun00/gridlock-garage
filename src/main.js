@@ -61,17 +61,24 @@ controls.maxDistance = 12;
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
+const boardPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const boardPoint = new THREE.Vector3();
 const vehicleGroup = new THREE.Group();
 const wallGroup = new THREE.Group();
 const highlightGroup = new THREE.Group();
 scene.add(vehicleGroup, wallGroup, highlightGroup);
 
-setupLights();
-buildBoard();
-buildStages();
-loadStage(1);
-resize();
-animate();
+try {
+  setupLights();
+  buildBoard();
+  buildStages();
+  loadStage(1);
+  resize();
+  animate();
+} catch (error) {
+  console.error(error);
+  host.textContent = `초기화 오류: ${error.message}`;
+}
 
 window.addEventListener("resize", resize);
 renderer.domElement.addEventListener("pointerdown", onPointerDown);
@@ -463,6 +470,17 @@ function createVehicleMesh(vehicle) {
   const length = vehicle.length * CELL - 0.16;
   const width = CELL * 0.78;
   const body = new THREE.Group();
+  const colliderGeometry = vehicle.orientation === "h"
+    ? new THREE.BoxGeometry(vehicle.length * CELL + 0.18, 1.0, CELL * 0.98)
+    : new THREE.BoxGeometry(CELL * 0.98, 1.0, vehicle.length * CELL + 0.18);
+  const collider = new THREE.Mesh(
+    colliderGeometry,
+    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+  );
+  collider.position.y = 0.44;
+  collider.userData.vehicleId = vehicle.id;
+  body.add(collider);
+
   const bodyGeometry = vehicle.orientation === "h"
     ? new THREE.BoxGeometry(length, 0.45, width)
     : new THREE.BoxGeometry(width, 0.45, length);
@@ -542,10 +560,9 @@ function onPointerDown(event) {
   setPointer(event);
   const intersections = raycaster.intersectObjects(vehicleGroup.children, true);
   const hit = intersections.find((item) => findVehicleByMesh(item.object));
-  if (!hit) return;
-  const vehicle = findVehicleByMesh(hit.object);
+  const vehicle = hit ? findVehicleByMesh(hit.object) : findVehicleByBoardCell();
+  if (!vehicle) return;
   const moves = movableRange(vehicle);
-  if (moves.min === 0 && moves.max === 0) return;
   state.selected = vehicle;
   state.drag = {
     vehicle,
@@ -601,6 +618,16 @@ function setPointer(event) {
   raycaster.setFromCamera(pointer, camera);
 }
 
+function findVehicleByBoardCell() {
+  if (!raycaster.ray.intersectPlane(boardPlane, boardPoint)) return null;
+  const col = Math.round((boardPoint.x + BOARD_OFFSET) / CELL);
+  const row = Math.round((boardPoint.z + BOARD_OFFSET) / CELL);
+  if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return null;
+  return state.vehicles.find((vehicle) => (
+    vehicleCells(vehicle).some(([vehicleRow, vehicleCol]) => vehicleRow === row && vehicleCol === col)
+  ));
+}
+
 function movableRange(vehicle) {
   const occupied = occupancy(vehicle.id);
   let min = 0;
@@ -630,12 +657,20 @@ function movableRange(vehicle) {
 
 function renderHighlights(vehicle, moves) {
   highlightGroup.clear();
-  const material = new THREE.MeshStandardMaterial({ color: "#f4d35e", transparent: true, opacity: 0.42 });
+  const selectedMaterial = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.28 });
+  const moveMaterial = new THREE.MeshStandardMaterial({ color: "#f4d35e", transparent: true, opacity: 0.42 });
+
+  vehicleCells(vehicle).forEach(([row, col]) => {
+    const marker = new THREE.Mesh(new THREE.BoxGeometry(CELL * 0.95, 0.08, CELL * 0.95), selectedMaterial);
+    marker.position.set(toX(col), 0.1, toZ(row));
+    highlightGroup.add(marker);
+  });
+
   for (let offset = moves.min; offset <= moves.max; offset += 1) {
     if (offset === 0) continue;
     const row = vehicle.orientation === "h" ? vehicle.row : vehicle.row + offset;
     const col = vehicle.orientation === "h" ? vehicle.col + offset : vehicle.col;
-    const marker = new THREE.Mesh(new THREE.BoxGeometry(CELL * 0.9, 0.07, CELL * 0.9), material);
+    const marker = new THREE.Mesh(new THREE.BoxGeometry(CELL * 0.9, 0.07, CELL * 0.9), moveMaterial);
     marker.position.set(toX(col), 0.08, toZ(row));
     highlightGroup.add(marker);
   }
