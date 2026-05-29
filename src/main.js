@@ -1,6 +1,6 @@
 import * as THREE from "https://esm.sh/three@0.164.1";
 import { OrbitControls } from "https://esm.sh/three@0.164.1/examples/jsm/controls/OrbitControls.js";
-import { PUZZLES } from "./puzzles.js";
+import { PUZZLES } from "./puzzles.js?v=click-target-3";
 
 const BOARD_SIZE = 6;
 const CELL = 1.1;
