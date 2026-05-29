@@ -175,6 +175,7 @@ try {
   buildStages();
   loadStage(1);
   resize();
+  setupDemoApi();
   animate();
 } catch (error) {
   console.error(error);
@@ -282,6 +283,7 @@ function parsePuzzle(stageId, puzzle) {
       const isTarget = label === "A";
       return {
         id: isTarget ? "goal" : `v${index}`,
+        label,
         row,
         col,
         length: cells.length,
@@ -614,10 +616,14 @@ function createVehicleMesh(vehicle) {
 }
 
 function updateVehicleMesh(vehicle) {
-  vehicle.mesh.position.set(
-    toX(vehicle.col) + (vehicle.orientation === "h" ? ((vehicle.length - 1) * CELL) / 2 : 0),
+  vehicle.mesh.position.copy(vehicleMeshPosition(vehicle));
+}
+
+function vehicleMeshPosition(vehicle, row = vehicle.row, col = vehicle.col) {
+  return new THREE.Vector3(
+    toX(col) + (vehicle.orientation === "h" ? ((vehicle.length - 1) * CELL) / 2 : 0),
     0,
-    toZ(vehicle.row) + (vehicle.orientation === "v" ? ((vehicle.length - 1) * CELL) / 2 : 0)
+    toZ(row) + (vehicle.orientation === "v" ? ((vehicle.length - 1) * CELL) / 2 : 0)
   );
 }
 
@@ -923,4 +929,93 @@ function animate() {
   }
   controls.update();
   renderer.render(scene, camera);
+}
+
+const STAGE_1_DEMO_PATH = [
+  { label: "F", toRow: 4, toCol: 4 },
+  { label: "H", toRow: 5, toCol: 4 },
+  { label: "L", toRow: 4, toCol: 3 },
+  { label: "D", toRow: 3, toCol: 3 },
+  { label: "J", toRow: 1, toCol: 2 },
+  { label: "G", toRow: 5, toCol: 1 },
+  { label: "I", toRow: 4, toCol: 0 },
+  { label: "D", toRow: 3, toCol: 0 },
+  { label: "J", toRow: 2, toCol: 2 },
+  { label: "L", toRow: 2, toCol: 3 },
+  { label: "F", toRow: 4, toCol: 1 },
+  { label: "L", toRow: 4, toCol: 3 },
+  { label: "K", toRow: 2, toCol: 3 },
+  { label: "M", toRow: 2, toCol: 5 },
+  { label: "B", toRow: 0, toCol: 3 },
+  { label: "C", toRow: 1, toCol: 4 },
+  { label: "J", toRow: 0, toCol: 2 },
+  { label: "A", toRow: 2, toCol: 1 },
+  { label: "D", toRow: 3, toCol: 1 },
+  { label: "I", toRow: 0, toCol: 0 },
+  { label: "A", toRow: 2, toCol: 0 },
+  { label: "D", toRow: 3, toCol: 0 },
+  { label: "F", toRow: 4, toCol: 0 },
+  { label: "J", toRow: 3, toCol: 2 },
+  { label: "A", toRow: 2, toCol: 1 },
+  { label: "I", toRow: 1, toCol: 0 },
+  { label: "B", toRow: 0, toCol: 0 },
+  { label: "K", toRow: 0, toCol: 3 },
+  { label: "L", toRow: 3, toCol: 3 },
+  { label: "H", toRow: 5, toCol: 3 },
+  { label: "M", toRow: 3, toCol: 5 },
+  { label: "A", toRow: 2, toCol: 5 },
+];
+
+function setupDemoApi() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has("demo")) return;
+
+  window.__gridlockDemo = {
+    async playStage1() {
+      loadStage(1);
+      await sleep(500);
+      for (const step of STAGE_1_DEMO_PATH) {
+        const vehicle = state.vehicles.find((item) => item.label === step.label);
+        if (!vehicle) throw new Error(`데모 차량을 찾을 수 없습니다: ${step.label}`);
+        state.history.push({ id: vehicle.id, row: vehicle.row, col: vehicle.col });
+        await animateVehicleMove(vehicle, step.toRow, step.toCol);
+        vehicle.row = step.toRow;
+        vehicle.col = step.toCol;
+        updateVehicleMesh(vehicle);
+        state.moves += 1;
+        renderHud();
+        await sleep(120);
+      }
+      checkClear();
+      return { cleared: state.cleared, moves: state.moves };
+    },
+  };
+}
+
+function animateVehicleMove(vehicle, toRow, toCol) {
+  const from = vehicle.mesh.position.clone();
+  const to = vehicleMeshPosition(vehicle, toRow, toCol);
+  const distance = Math.abs(toRow - vehicle.row) + Math.abs(toCol - vehicle.col);
+  const duration = Math.max(220, distance * 230);
+  const started = performance.now();
+
+  return new Promise((resolve) => {
+    function tick(now) {
+      const progress = Math.min(1, (now - started) / duration);
+      const eased = 1 - (1 - progress) ** 3;
+      vehicle.mesh.position.lerpVectors(from, to, eased);
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        resolve();
+      }
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
