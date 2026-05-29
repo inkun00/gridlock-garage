@@ -669,6 +669,7 @@ function onPointerDown(event) {
     vehicle,
     startX: event.clientX,
     startY: event.clientY,
+    screenAxis: vehicleScreenAxis(vehicle),
     startRow: vehicle.row,
     startCol: vehicle.col,
     min: moves.min,
@@ -681,10 +682,11 @@ function onPointerDown(event) {
 
 function onPointerMove(event) {
   if (!state.drag) return;
-  const { vehicle, startX, startY, startRow, startCol, min, max } = state.drag;
-  const delta = vehicle.orientation === "h"
-    ? Math.round((event.clientX - startX) / 92)
-    : Math.round((event.clientY - startY) / 92);
+  const { vehicle, startX, startY, screenAxis, startRow, startCol, min, max } = state.drag;
+  if (!screenAxis || screenAxis.lengthSq === 0) return;
+  const dragX = event.clientX - startX;
+  const dragY = event.clientY - startY;
+  const delta = Math.round((dragX * screenAxis.x + dragY * screenAxis.y) / screenAxis.lengthSq);
   const raw = vehicle.orientation === "h" ? startCol + delta : startRow + delta;
   const clamped = Math.max(vehicle.orientation === "h" ? startCol + min : startRow + min, Math.min(vehicle.orientation === "h" ? startCol + max : startRow + max, raw));
   if (vehicle.orientation === "h") {
@@ -717,6 +719,41 @@ function setPointer(event) {
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
   raycaster.setFromCamera(pointer, camera);
+}
+
+function pointerBoardPosition(event) {
+  setPointer(event);
+  if (!raycaster.ray.intersectPlane(boardPlane, boardPoint)) return null;
+  return boardPoint.clone();
+}
+
+function vehicleScreenAxis(vehicle) {
+  const origin = new THREE.Vector3(
+    toX(vehicle.col) + (vehicle.orientation === "h" ? ((vehicle.length - 1) * CELL) / 2 : 0),
+    0.35,
+    toZ(vehicle.row) + (vehicle.orientation === "v" ? ((vehicle.length - 1) * CELL) / 2 : 0)
+  );
+  const target = origin.clone();
+  if (vehicle.orientation === "h") {
+    target.x += CELL;
+  } else {
+    target.z += CELL;
+  }
+
+  const start = worldToCanvasPoint(origin);
+  const end = worldToCanvasPoint(target);
+  const x = end.x - start.x;
+  const y = end.y - start.y;
+  return { x, y, lengthSq: x * x + y * y };
+}
+
+function worldToCanvasPoint(world) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const projected = world.clone().project(camera);
+  return {
+    x: ((projected.x + 1) / 2) * rect.width + rect.left,
+    y: ((1 - projected.y) / 2) * rect.height + rect.top,
+  };
 }
 
 function findVehicleByBoardCell() {
