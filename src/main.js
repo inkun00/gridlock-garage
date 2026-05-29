@@ -775,9 +775,10 @@ function movableRange(vehicle) {
       if (occupied.has(`${vehicle.row},${col}`)) break;
       min -= 1;
     }
-    const limit = vehicle.target ? BOARD_SIZE : BOARD_SIZE - vehicle.length;
-    for (let col = vehicle.col + vehicle.length; col <= limit; col += 1) {
-      if (col < BOARD_SIZE && occupied.has(`${vehicle.row},${col}`)) break;
+    const limit = vehicle.target ? BOARD_SIZE - 1 : BOARD_SIZE - vehicle.length;
+    for (let col = vehicle.col + 1; col <= limit; col += 1) {
+      const nose = col + vehicle.length - 1;
+      if (nose < BOARD_SIZE && occupied.has(`${vehicle.row},${nose}`)) break;
       max += 1;
     }
   } else {
