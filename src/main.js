@@ -806,8 +806,16 @@ function renderHighlights(vehicle, moves) {
 
   for (let offset = moves.min; offset <= moves.max; offset += 1) {
     if (offset === 0) continue;
-    const row = vehicle.orientation === "h" ? vehicle.row : vehicle.row + offset;
-    const col = vehicle.orientation === "h" ? vehicle.col + offset : vehicle.col;
+    const row = vehicle.orientation === "h"
+      ? vehicle.row
+      : offset > 0
+        ? vehicle.row + vehicle.length + offset - 1
+        : vehicle.row + offset;
+    const col = vehicle.orientation === "h"
+      ? offset > 0
+        ? vehicle.col + vehicle.length + offset - 1
+        : vehicle.col + offset
+      : vehicle.col;
     const marker = new THREE.Mesh(new THREE.BoxGeometry(CELL * 0.9, 0.07, CELL * 0.9), moveMaterial);
     marker.position.set(toX(col), 0.08, toZ(row));
     highlightGroup.add(marker);
