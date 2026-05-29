@@ -990,6 +990,12 @@ function setupDemoApi() {
       return { cleared: state.cleared, moves: state.moves };
     },
   };
+
+  if (params.has("solve")) {
+    setTimeout(() => {
+      window.__gridlockDemo.playStage1();
+    }, 800);
+  }
 }
 
 function animateVehicleMove(vehicle, toRow, toCol) {

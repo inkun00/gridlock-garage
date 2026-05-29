@@ -19,5 +19,5 @@ await writeFile("dist/assets/styles.css", styles);
 
 let html = await readFile("index.html", "utf8");
 html = html.replace('<link rel="stylesheet" href="./styles.css" />', '<link rel="stylesheet" href="/assets/styles.css" />');
-html = html.replace('<script type="module" src="./src/main.js"></script>', '<script defer src="/assets/app.js?v=iife-3"></script>');
+html = html.replace('<script type="module" src="./src/main.js"></script>', '<script defer src="/assets/app.js?v=iife-4"></script>');
 await writeFile("dist/index.html", html);
