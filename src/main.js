@@ -268,11 +268,7 @@ function parsePuzzle(stageId, puzzle) {
   [...puzzle.board].forEach((cell, index) => {
     const row = Math.floor(index / BOARD_SIZE);
     const col = index % BOARD_SIZE;
-    if (cell === "x") {
-      walls.push({ id: `wall-${row}-${col}`, row, col });
-      return;
-    }
-    if (cell === "o" || cell === ".") return;
+    if (cell === "o" || cell === "." || cell === "x") return;
     if (!labels.has(cell)) labels.set(cell, []);
     labels.get(cell).push({ row, col });
   });
