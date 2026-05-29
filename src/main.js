@@ -966,15 +966,74 @@ const STAGE_1_DEMO_PATH = [
   { label: "A", toRow: 2, toCol: 5 },
 ];
 
+const STAGE_2_DEMO_PATH = [
+  { label: "B", toRow: 0, toCol: 1 },
+  { label: "G", toRow: 5, toCol: 0 },
+  { label: "H", toRow: 5, toCol: 4 },
+  { label: "J", toRow: 4, toCol: 2 },
+  { label: "A", toRow: 2, toCol: 1 },
+  { label: "L", toRow: 4, toCol: 3 },
+  { label: "M", toRow: 0, toCol: 4 },
+  { label: "D", toRow: 3, toCol: 3 },
+  { label: "I", toRow: 3, toCol: 0 },
+  { label: "A", toRow: 2, toCol: 0 },
+  { label: "B", toRow: 0, toCol: 0 },
+  { label: "C", toRow: 1, toCol: 0 },
+  { label: "J", toRow: 1, toCol: 2 },
+  { label: "G", toRow: 5, toCol: 1 },
+  { label: "I", toRow: 4, toCol: 0 },
+  { label: "D", toRow: 3, toCol: 0 },
+  { label: "J", toRow: 2, toCol: 2 },
+  { label: "K", toRow: 0, toCol: 3 },
+  { label: "L", toRow: 2, toCol: 3 },
+  { label: "F", toRow: 4, toCol: 1 },
+  { label: "L", toRow: 4, toCol: 3 },
+  { label: "K", toRow: 2, toCol: 3 },
+  { label: "M", toRow: 2, toCol: 4 },
+  { label: "N", toRow: 3, toCol: 5 },
+  { label: "B", toRow: 0, toCol: 3 },
+  { label: "C", toRow: 1, toCol: 4 },
+  { label: "J", toRow: 0, toCol: 2 },
+  { label: "A", toRow: 2, toCol: 1 },
+  { label: "D", toRow: 3, toCol: 1 },
+  { label: "I", toRow: 0, toCol: 0 },
+  { label: "A", toRow: 2, toCol: 0 },
+  { label: "D", toRow: 3, toCol: 0 },
+  { label: "F", toRow: 4, toCol: 0 },
+  { label: "G", toRow: 5, toCol: 0 },
+  { label: "J", toRow: 3, toCol: 2 },
+  { label: "A", toRow: 2, toCol: 1 },
+  { label: "I", toRow: 1, toCol: 0 },
+  { label: "B", toRow: 0, toCol: 0 },
+  { label: "K", toRow: 0, toCol: 3 },
+  { label: "L", toRow: 3, toCol: 3 },
+  { label: "H", toRow: 5, toCol: 2 },
+  { label: "M", toRow: 3, toCol: 4 },
+  { label: "A", toRow: 2, toCol: 5 },
+];
+
+const DEMO_PATHS = {
+  1: STAGE_1_DEMO_PATH,
+  2: STAGE_2_DEMO_PATH,
+};
+
 function setupDemoApi() {
   const params = new URLSearchParams(window.location.search);
   if (!params.has("demo")) return;
 
   window.__gridlockDemo = {
     async playStage1() {
-      loadStage(1);
+      return this.playStage(1);
+    },
+    async playStage2() {
+      return this.playStage(2);
+    },
+    async playStage(stageId) {
+      const path = DEMO_PATHS[stageId];
+      if (!path) throw new Error(`데모 경로가 없습니다: ${stageId} 스테이지`);
+      loadStage(stageId);
       await sleep(500);
-      for (const step of STAGE_1_DEMO_PATH) {
+      for (const step of path) {
         const vehicle = state.vehicles.find((item) => item.label === step.label);
         if (!vehicle) throw new Error(`데모 차량을 찾을 수 없습니다: ${step.label}`);
         state.history.push({ id: vehicle.id, row: vehicle.row, col: vehicle.col });
@@ -992,8 +1051,9 @@ function setupDemoApi() {
   };
 
   if (params.has("solve")) {
+    const requestedStage = Number(params.get("solve")) || Number(params.get("stage")) || 1;
     setTimeout(() => {
-      window.__gridlockDemo.playStage1();
+      window.__gridlockDemo.playStage(requestedStage);
     }, 800);
   }
 }
